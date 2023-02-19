@@ -8,4 +8,4 @@ services:
     volumes:
       - .:/app
     ports:
-      - "18000:8080"
+      - "18000:80"

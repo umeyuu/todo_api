@@ -25,6 +25,5 @@ CMD ["./app"]
 # ローカル開発環境で利用するホットリロード環境
 FROM golang:1.18.2 as dev
 WORKDIR /app
-
 RUN go install github.com/cosmtrek/air@latest
 CMD ["air"]
