@@ -8,10 +8,23 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/umeyuu/todo_api/config"
 	"golang.org/x/sync/errgroup"
 )
 
-func run(ctx context.Context, l net.Listener) error {
+func run(ctx context.Context) error {
+	// configを読み込み
+	cfg, err := config.New()
+	if err != nil {
+		return err
+	}
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Port))
+	if err != nil {
+		log.Fatalf("faild to listen port %d: %v", cfg.Port, err)
+	}
+	url := fmt.Sprintf("http://%s", l.Addr().String())
+	log.Printf("start with: %v", url)
+
 	s := &http.Server{
 		// 引数で受け取ったnet.Listenerを利用するので、Addr は指定しない
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -41,17 +54,7 @@ func run(ctx context.Context, l net.Listener) error {
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		log.Println("need port number")
-		os.Exit(1)
-	}
-	p := os.Args[1]
-	l, err := net.Listen("tcp", ":"+p)
-	if err != nil {
-		log.Fatalf("faild to listen port %s: %v", p, err)
-	}
-
-	if err := run(context.Background(), l); err != nil {
+	if err := run(context.Background()); err != nil {
 		log.Printf("failed to terminate server: %v", err)
 		os.Exit(1)
 	}
