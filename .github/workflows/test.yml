@@ -10,18 +10,14 @@ jobs:
     services:
       mysql:
         image: mysql:8
-        options: >-
-          --health-cmd "mysqladmin ping -h localhost"
-          --health-interval 205
-          --health-timeout 105
-          --health-retires 10
+        options: --health-cmd "mysqladmin ping -h localhost" --health-interval 20s --health-timeout 10s --health-retries 10
         ports:
           - 3306:3306
-          env:
-            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-            MYSQL_DATABASE: todo
-            MYSQL_USER: todo
-            MYSQL_PASSWORD: todo
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: todo
+          MYSQL_USER: todo
+          MYSQL_PASSWORD: todo
     steps:
     - uses: actions/setup-go@v3
       with:
