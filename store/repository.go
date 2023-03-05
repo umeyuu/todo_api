@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/umeyuu/todo_api/clock"
 	"github.com/umeyuu/todo_api/config"
@@ -14,7 +15,7 @@ import (
 func New(ctx context.Context, cfg *config.Config) (*sqlx.DB, func(), error) {
 	// sqlx.Connectを使うと内部でpingする
 	db, err := sql.Open("mysql", fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)%s?parseTime=true",
+		"%s:%s@tcp(%s:%d)/%s?parseTime=true",
 		cfg.DBUser, cfg.DBPassword,
 		cfg.DBHOST, cfg.DBPort, cfg.DBName,
 	))
