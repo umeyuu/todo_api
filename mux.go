@@ -9,6 +9,7 @@ import (
 	"github.com/umeyuu/todo_api/clock"
 	"github.com/umeyuu/todo_api/config"
 	"github.com/umeyuu/todo_api/handler"
+	"github.com/umeyuu/todo_api/service"
 	"github.com/umeyuu/todo_api/store"
 )
 
@@ -24,9 +25,14 @@ func NewMux(ctx context.Context, cfg *config.Config) (http.Handler, func(), erro
 		return nil, cleanup, err
 	}
 	r := store.Repository{Clocker: clock.RealClocker{}}
-	at := &handler.AddTask{DB: db, Repo: &r, Validator: v}
+	at := &handler.AddTask{
+		Service:   &service.AddTask{DB: db, Repo: &r},
+		Validator: v,
+	}
 	mux.Post("/tasks", at.ServeHTTP)
-	lt := &handler.ListTask{DB: db, Repo: &r}
+	lt := &handler.ListTask{
+		Service: &service.ListTask{DB: db, Repo: &r},
+	}
 	mux.Get("/tasks", lt.ServeHTTP)
 	return mux, cleanup, nil
 }

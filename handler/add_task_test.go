@@ -2,13 +2,14 @@ package handler
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/umeyuu/todo_api/entity"
-	"github.com/umeyuu/todo_api/store"
 	"github.com/umeyuu/todo_api/testutil"
 )
 
@@ -29,13 +30,13 @@ func TestAddTask(t *testing.T) {
 				rspFile: "testdata/add_task/ok_rsp.json.golden",
 			},
 		},
-		// "badRequest": {
-		// 	reqFile: "testdata/add_task/bad_req.json.golden",
-		// 	want: want{
-		// 		status:  http.StatusOK,
-		// 		rspFile: "testdata/add_task/bad_rsp.json.golden",
-		// 	},
-		// },
+		"badRequest": {
+			reqFile: "testdata/add_task/bad_req.json.golden",
+			want: want{
+				status:  http.StatusBadRequest,
+				rspFile: "testdata/add_task/bad_rsp.json.golden",
+			},
+		},
 	}
 
 	for n, tt := range tests {
@@ -50,10 +51,18 @@ func TestAddTask(t *testing.T) {
 				bytes.NewReader(testutil.LoadFile(t, tt.reqFile)),
 			)
 
+			moq := &AddTaskServiceMock{}
+			moq.AddTaskFunc = func(
+				ctx context.Context, title string,
+			) (*entity.Task, error) {
+				if tt.want.status == http.StatusOK {
+					return &entity.Task{ID: 1}, nil
+				}
+				return nil, errors.New("error from mock")
+			}
+
 			sut := AddTask{
-				Store: &store.TaskStore{
-					Tasks: map[entity.TaskID]*entity.Task{},
-				},
+				Service:   moq,
 				Validator: validator.New(),
 			}
 			sut.ServeHTTP(w, r)
