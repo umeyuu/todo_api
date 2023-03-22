@@ -13,12 +13,17 @@ services:
       TODO_DB_USER: todo
       TODO_DB_PASSWORD: todo
       TODO_DB_NAME: todo
+      TODO_REDIS_HOST: todo-redis
+      TODO_REDIS_PORT: 6379
     volumes:
       - .:/app
     ports:
       - "18000:8080"
     links:
       - todo-db
+    depends_on:
+      todo-db:
+        condition: service_healthy
   todo-db:
     image: mysql:8.0.29
     platform: linux/amd64
@@ -33,5 +38,21 @@ services:
       - $PWD/_tools/mysql/conf.d:/etc/mysql/conf.d:cached
     ports:
       - "33306:3306"
+    # service_healthy のために必要となるヘルスチェック
+    healthcheck:
+      test: exit 0
+      # すぐに結果が出るようにタイミングを調整する
+      interval: 1s
+      timeout: 1s
+      retries: 3
+      start_period: 1s
+  todo-redis:
+    image: "redis:latest"
+    container_name: todo-redis
+    ports:
+      - "36379:6379"
+    volumes:
+      - todo-redis-data:/data
 volumes:
   todo-db-data:
+  todo-redis-data:
